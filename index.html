@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imman Kajtazović — Aspiring Consultant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root {
+    --s0:  #FDFCFA;
+    --s1:  #F7F5F1;
+    --s2:  #EEEBE5;
+    --s3:  #E4E0D8;
+    --s4:  #D5D0C7;
+    --s5:  #B8B3A8;
+    --s6:  #8C8880;
+    --s7:  #5C5A55;
+    --s8:  #3A3935;
+    --s9:  #1E1E1C;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans:  'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--s1);
+    color: var(--s9);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(247,245,241,0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--s3);
+  }
+  .nav-logo {
+    font-family: var(--serif); font-size: 1.2rem; font-weight: 600;
+    color: var(--s9); text-decoration: none; letter-spacing: 0.02em;
+  }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--sans); font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--s6); text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--s9); }
+  .nav-hamburger {
+    display: none; flex-direction: column; gap: 5px;
+    cursor: pointer; background: none; border: none; padding: 4px;
+  }
+  .nav-hamburger span { display: block; width: 22px; height: 1.5px; background: var(--s8); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 8rem 2rem 5rem;
+    background: var(--s0); position: relative; overflow: hidden;
+  }
+  #hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 55% at 50% 45%, rgba(180,175,165,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: var(--sans); font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.28em; text-transform: uppercase; color: var(--s6);
+    margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp 0.9s ease 0.2s forwards;
+  }
+  .hero-name {
+    font-family: var(--serif);
+    font-size: clamp(3.8rem, 9.5vw, 9rem);
+    font-weight: 300; line-height: 0.95; letter-spacing: -0.02em;
+    color: var(--s9); margin-bottom: 1.8rem;
+    opacity: 0; animation: fadeUp 1.1s ease 0.4s forwards;
+  }
+  .hero-name em { font-style: italic; color: var(--s7); }
+  .hero-rule {
+    width: 48px; height: 1px; background: var(--s4);
+    margin: 0 auto 1.8rem;
+    opacity: 0; animation: fadeUp 0.9s ease 0.65s forwards;
+  }
+  .hero-headline {
+    font-family: var(--serif); font-size: clamp(1rem, 2.2vw, 1.3rem);
+    font-style: italic; font-weight: 400; color: var(--s6);
+    max-width: 600px; margin-bottom: 2.8rem; line-height: 1.65;
+    opacity: 0; animation: fadeUp 0.9s ease 0.85s forwards;
+  }
+  .hero-cta {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    opacity: 0; animation: fadeUp 0.9s ease 1.05s forwards;
+  }
+  .btn {
+    font-family: var(--sans); font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    text-decoration: none; padding: 0.9rem 2.4rem;
+    border: 1px solid; transition: background 0.22s, color 0.22s, border-color 0.22s;
+  }
+  .btn-dark { color: var(--s0); background: var(--s8); border-color: var(--s8); }
+  .btn-dark:hover { background: var(--s9); border-color: var(--s9); }
+  .btn-outline { color: var(--s8); background: transparent; border-color: var(--s4); }
+  .btn-outline:hover { background: var(--s3); border-color: var(--s3); }
+  .hero-scroll {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    opacity: 0; animation: fadeUp 0.9s ease 1.4s forwards;
+  }
+  .hero-scroll span { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--s5); }
+  .scroll-line {
+    width: 1px; height: 36px;
+    background: linear-gradient(to bottom, var(--s5), transparent);
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse { 0%,100%{opacity:0.35} 50%{opacity:1} }
+
+  /* ── SHARED LAYOUT ── */
+  section { padding: 7rem 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 3rem; }
+  .container-narrow { max-width: 760px; margin: 0 auto; padding: 0 3rem; }
+  .section-label {
+    font-family: var(--sans); font-size: 0.64rem; font-weight: 500;
+    letter-spacing: 0.26em; text-transform: uppercase; color: var(--s6); margin-bottom: 1.2rem;
+  }
+  .section-title {
+    font-family: var(--serif); font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    font-weight: 300; line-height: 1.08; letter-spacing: -0.01em; margin-bottom: 1rem;
+  }
+  .section-title em { font-style: italic; color: var(--s7); }
+
+  .fade-in { opacity: 0; transform: translateY(28px); transition: opacity 0.75s ease, transform 0.75s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── ABOUT ── */
+  #about { background: var(--s2); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4.5rem; margin-top: 3rem; align-items: start; }
+  .about-text p {
+    font-family: var(--serif); font-size: 1.1rem; color: var(--s8);
+    line-height: 1.9; margin-bottom: 1.4rem;
+  }
+  .about-text p:last-child { margin-bottom: 0; }
+  .about-right { display: flex; flex-direction: column; gap: 2rem; }
+  .stat-item { border-left: 1px solid var(--s4); padding-left: 1.4rem; }
+  .stat-number { font-family: var(--serif); font-size: 2.6rem; font-weight: 300; color: var(--s8); line-height: 1; margin-bottom: 0.2rem; }
+  .stat-label { font-family: var(--sans); font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--s6); }
+  .lang-block { margin-top: 0.5rem; padding-top: 2rem; border-top: 1px solid var(--s3); }
+  .lang-title { font-family: var(--sans); font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--s6); margin-bottom: 1rem; }
+  .lang-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--s3); }
+  .lang-row:last-child { border-bottom: none; }
+  .lang-name { font-family: var(--serif); font-size: 1rem; color: var(--s8); }
+  .lang-lvl { font-family: var(--sans); font-size: 0.62rem; letter-spacing: 0.13em; color: var(--s6); background: var(--s3); padding: 0.2rem 0.6rem; }
+
+  /* ── GEOGRAPHIC NARRATIVE ── */
+  #journey { padding: 0; background: var(--s1); }
+  .journey-header { padding: 5rem 3rem 2.5rem; text-align: center; }
+
+  /* The main split container */
+  .journey-split {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  /* Left: scrollable panels */
+  .journey-panels {
+    width: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Right: sticky map */
+  .journey-map {
+    width: 50%;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Each panel = 100vh so one fills screen at a time */
+  .j-panel {
+    min-height: 100vh;
+    padding: 5rem 4.5rem 5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--s3);
+    background: var(--s1);
+    transition: background 0.4s ease;
+  }
+  .j-panel:last-child { border-bottom: none; }
+  .j-panel.active { background: var(--s0); }
+
+  .j-roman { font-family: var(--serif); font-size: 0.8rem; font-weight: 400; letter-spacing: 0.18em; color: var(--s5); margin-bottom: 0.9rem; }
+  .j-chapter { font-family: var(--serif); font-size: clamp(1.9rem, 3.5vw, 3rem); font-weight: 300; line-height: 1.05; color: var(--s9); margin-bottom: 0.4rem; }
+  .j-sub { font-family: var(--serif); font-size: 1rem; font-style: italic; color: var(--s6); margin-bottom: 1.4rem; }
+  .j-rule { width: 36px; height: 1px; background: var(--s4); margin-bottom: 1rem; }
+  .j-location { font-family: var(--sans); font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500; color: var(--s6); margin-bottom: 1.4rem; }
+  .j-text { font-family: var(--serif); font-size: 1.04rem; color: var(--s8); line-height: 1.85; margin-bottom: 1.8rem; max-width: 460px; }
+  .j-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .j-tag { font-family: var(--sans); font-size: 0.62rem; letter-spacing: 0.1em; font-weight: 500; color: var(--s7); border: 1px solid var(--s3); padding: 0.28rem 0.85rem; background: var(--s2); }
+
+  /* ── EXPERIENCE ── */
+  #experience { background: var(--s0); }
+  .exp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 3rem; background: var(--s3); }
+  .exp-card { background: var(--s0); padding: 2.5rem; transition: background 0.22s; cursor: default; }
+  .exp-card:hover { background: var(--s2); }
+  .exp-num { font-family: var(--serif); font-size: 2.8rem; font-weight: 300; color: var(--s3); line-height: 1; margin-bottom: 1.4rem; transition: color 0.22s; }
+  .exp-card:hover .exp-num { color: var(--s4); }
+  .exp-company { font-family: var(--sans); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--s6); margin-bottom: 0.5rem; }
+  .exp-role { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; color: var(--s9); margin-bottom: 0.9rem; line-height: 1.3; }
+  .exp-desc { font-family: var(--sans); font-size: 0.83rem; color: var(--s6); line-height: 1.7; margin-bottom: 1.4rem; }
+  .exp-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .exp-tag { font-size: 0.6rem; letter-spacing: 0.1em; font-family: var(--sans); color: var(--s6); border: 1px solid var(--s3); padding: 0.18rem 0.55rem; }
+
+  /* ── LEADERSHIP ── */
+  #leadership { background: var(--s2); }
+  .leadership-list { margin-top: 3rem; }
+  .leadership-item { display: grid; grid-template-columns: 64px 1fr; gap: 2rem; padding: 2.2rem 0; border-bottom: 1px solid var(--s3); align-items: start; }
+  .leadership-item:first-child { border-top: 1px solid var(--s3); }
+  .l-idx { font-family: var(--serif); font-size: 1.8rem; font-weight: 300; color: var(--s4); line-height: 1.2; padding-top: 0.1rem; }
+  .l-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 500; color: var(--s9); margin-bottom: 0.3rem; line-height: 1.3; }
+  .l-sub { font-family: var(--sans); font-size: 0.76rem; color: var(--s6); letter-spacing: 0.03em; }
+
+  /* ── HONORS ── */
+  #honors { background: var(--s3); }
+  .honors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1px; margin-top: 3rem; background: var(--s4); }
+  .honor-item { background: var(--s3); padding: 1.8rem 2rem; display: flex; align-items: flex-start; gap: 1rem; transition: background 0.2s; }
+  .honor-item:hover { background: var(--s2); }
+  .honor-dot { width: 5px; height: 5px; background: var(--s6); border-radius: 50%; flex-shrink: 0; margin-top: 0.6rem; }
+  .honor-text { font-family: var(--serif); font-size: 1rem; color: var(--s8); line-height: 1.45; }
+  .honor-sub { display: block; font-family: var(--sans); font-size: 0.66rem; color: var(--s6); letter-spacing: 0.07em; margin-top: 0.2rem; }
+
+  /* ── SKILLS ── */
+  #skills { background: var(--s1); }
+  .skills-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3rem; }
+  .skills-group-title { font-family: var(--sans); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--s6); margin-bottom: 1.4rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--s3); }
+  .skill-pill { display: inline-block; font-family: var(--sans); font-size: 0.78rem; color: var(--s8); background: var(--s2); padding: 0.45rem 1rem; margin: 0.28rem 0.28rem 0.28rem 0; border: 1px solid var(--s3); transition: all 0.18s; }
+  .skill-pill:hover { background: var(--s3); }
+
+  /* ── INTERESTS ── */
+  #interests { background: var(--s2); }
+  .interests-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; margin-top: 3rem; }
+  .interest-card { padding: 2.2rem; background: var(--s1); border-left: 2px solid var(--s4); transition: border-color 0.2s, background 0.2s; }
+  .interest-card:hover { background: var(--s0); border-color: var(--s6); }
+  .i-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 500; color: var(--s9); margin-bottom: 0.5rem; }
+  .i-text { font-family: var(--sans); font-size: 0.83rem; color: var(--s6); line-height: 1.7; }
+
+  /* ── DANCE ── */
+  #dance { background: var(--s1); position: relative; overflow: hidden; }
+  #dance::before {
+    content: 'DANCE';
+    position: absolute; font-family: var(--serif); font-size: 16vw; font-weight: 300;
+    color: rgba(90,88,85,0.04); right: -2vw; top: 50%; transform: translateY(-50%);
+    pointer-events: none; white-space: nowrap; letter-spacing: -0.02em;
+  }
+  .dance-content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 5rem; margin-top: 3rem; align-items: center; }
+  .dance-text p { font-family: var(--serif); font-size: 1.08rem; color: var(--s8); line-height: 1.9; margin-bottom: 1.4rem; }
+  .dance-quote { border-left: 2px solid var(--s4); padding: 2rem 2.5rem; background: var(--s2); }
+  .dance-quote p { font-family: var(--serif); font-size: 1.3rem; font-style: italic; font-weight: 300; color: var(--s8); line-height: 1.5; }
+  .dance-quote cite { display: block; font-family: var(--sans); font-size: 0.63rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--s6); margin-top: 1rem; font-style: normal; }
+
+  /* ── CONTACT ── */
+  #contact { background: var(--s2); text-align: center; }
+  .contact-intro { font-family: var(--serif); font-size: 1.1rem; font-style: italic; color: var(--s6); max-width: 540px; margin: 1.4rem auto 2.8rem; line-height: 1.75; }
+  .contact-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .contact-link { font-family: var(--sans); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; color: var(--s8); border: 1px solid var(--s4); padding: 0.9rem 2.2rem; transition: all 0.22s; }
+  .contact-link:hover { background: var(--s8); color: var(--s1); border-color: var(--s8); }
+
+  /* ── FOOTER ── */
+  footer { background: var(--s3); padding: 2.2rem 3rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--s4); }
+  .footer-name { font-family: var(--serif); font-size: 1rem; color: var(--s8); }
+  .footer-note { font-family: var(--sans); font-size: 0.66rem; letter-spacing: 0.1em; color: var(--s6); }
+
+  /* ── LEAFLET ── */
+  .leaflet-container { background: #F2EFE9 !important; }
+  .leaflet-control-zoom { border: 1px solid var(--s3) !important; }
+  .leaflet-control-zoom a { background: var(--s1) !important; color: var(--s8) !important; border-color: var(--s3) !important; }
+  .leaflet-control-attribution { background: rgba(247,245,241,0.85) !important; font-size: 10px !important; }
+  .map-pin {
+    width: 12px !important; height: 12px !important;
+    background: var(--s8) !important;
+    border: 2px solid var(--s1) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 0 3px rgba(60,57,53,0.18) !important;
+  }
+  .map-label {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #5C5A55;
+    white-space: nowrap; padding-left: 4px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .nav-links.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--s1); padding: 1.5rem 2rem; border-bottom: 1px solid var(--s3); gap: 1.2rem;
+    }
+    .nav-hamburger { display: flex; }
+    .container, .container-narrow { padding: 0 1.5rem; }
+    section { padding: 5rem 0; }
+    .about-grid, .dance-content { grid-template-columns: 1fr; gap: 2.5rem; }
+    .exp-grid { grid-template-columns: 1fr; }
+    .skills-wrap, .interests-grid { grid-template-columns: 1fr; gap: 2rem; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    /* Map stacks on mobile */
+    .journey-split { flex-direction: column; }
+    .journey-panels { width: 100%; }
+    .journey-map { width: 100%; position: relative; height: 55vw; min-height: 260px; }
+    .j-panel { padding: 3rem 1.5rem; min-height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo">I. Kajtazović</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#journey">Journey</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#leadership">Leadership</a></li>
+    <li><a href="#honors">Honors</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow">University of Richmond · Class of 2027</div>
+  <h1 class="hero-name">Imman<br><em>Kajtazović</em></h1>
+  <div class="hero-rule"></div>
+  <p class="hero-headline">Aspiring Consultant · Presidential Scholar<br>Artificial Intelligence · Higher Education · Strategy</p>
+  <div class="hero-cta">
+    <a href="#experience" class="btn btn-dark">View My Work</a>
+    <a href="#contact" class="btn btn-outline">Get In Touch</a>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="section-label fade-in">About</div>
+    <h2 class="section-title fade-in">Bridging worlds,<br><em>building strategy.</em></h2>
+    <div class="about-grid">
+      <div class="about-text fade-in">
+        <p>I'm from Bihać, Bosnia and Herzegovina — a city shaped by rivers, history, and resilience. Growing up in the Balkans gave me an instinct for complexity: navigating competing narratives, reading between the lines, finding clarity in ambiguity.</p>
+        <p>I've lived and studied across four countries, served as a UN COP27 delegate in Egypt in 2022, and built my education at United World College in Mostar alongside peers from 90+ countries. Today I'm at the University of Richmond pursuing a BS in Business Administration with a double concentration in Management Consulting and Analytics & Operations — GPA 3.84.</p>
+        <p>I bring global perspective and analytical rigor to every problem I work on. I'm targeting MBB and top-tier consulting firms, and I'm particularly passionate about the intersection of higher education, AI, and women's leadership.</p>
+      </div>
+      <div class="about-right fade-in">
+        <div class="stat-item"><div class="stat-number">3.84</div><div class="stat-label">GPA · University of Richmond</div></div>
+        <div class="stat-item"><div class="stat-number">4</div><div class="stat-label">Countries Lived & Studied</div></div>
+        <div class="stat-item"><div class="stat-number">90+</div><div class="stat-label">Nationalities at UWC</div></div>
+        <div class="stat-item"><div class="stat-number">MBB</div><div class="stat-label">Target: McKinsey · BCG · Bain</div></div>
+        <div class="lang-block">
+          <div class="lang-title">Languages</div>
+          <div class="lang-row"><span class="lang-name">English</span><span class="lang-lvl">C2</span></div>
+          <div class="lang-row"><span class="lang-name">Bosnian / Croatian</span><span class="lang-lvl">C2</span></div>
+          <div class="lang-row"><span class="lang-name">German</span><span class="lang-lvl">B1</span></div>
+          <div class="lang-row"><span class="lang-name">Italian</span><span class="lang-lvl">A1</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GEOGRAPHIC NARRATIVE -->
+<section id="journey" style="padding:0;">
+  <div class="journey-header fade-in">
+    <div class="section-label" style="display:inline-block;margin-bottom:0.9rem;">A Life in Motion</div>
+    <h2 class="section-title">Four Cities,<br><em>One Story.</em></h2>
+  </div>
+
+  <div class="journey-split" id="journey-split">
+
+    <!-- LEFT: scrollable panels -->
+    <div class="journey-panels" id="journey-panels">
+
+      <div class="j-panel" data-city="0" id="jp0">
+        <div class="j-roman">I</div>
+        <h3 class="j-chapter">Foundations</h3>
+        <p class="j-sub">Resilience &amp; Cultural Complexity</p>
+        <div class="j-rule"></div>
+        <div class="j-location">Bihać, Bosnia · 2003–2020</div>
+        <p class="j-text">Born in Bihać, a city shaped by history and surrounded by emerald rivers. The Balkans instilled in me a capacity for navigating complexity — cultural, political, linguistic. The city's resilience became my own.</p>
+        <div class="j-tags"><span class="j-tag">Origin</span><span class="j-tag">Bosnian / Croatian C2</span><span class="j-tag">Cultural Depth</span></div>
+      </div>
+
+      <div class="j-panel" data-city="1" id="jp1">
+        <div class="j-roman">II</div>
+        <h3 class="j-chapter">Expansion</h3>
+        <p class="j-sub">Global Citizenship Begins</p>
+        <div class="j-rule"></div>
+        <div class="j-location">Mostar, Bosnia · 2020–2022</div>
+        <p class="j-text">Selected as one of 22 UWC scholars nationally to study at United World College in Mostar. Living and learning alongside peers from 90+ countries reshaped how I see problems — and people.</p>
+        <div class="j-tags"><span class="j-tag">UWC Scholar</span><span class="j-tag">Global Citizenship</span><span class="j-tag">Leadership</span></div>
+      </div>
+
+      <div class="j-panel" data-city="2" id="jp2">
+        <div class="j-roman">III</div>
+        <h3 class="j-chapter">Immersion</h3>
+        <p class="j-sub">Strategy in the Capital of Style</p>
+        <div class="j-rule"></div>
+        <div class="j-location">Milan, Italy · 2025</div>
+        <p class="j-text">Bocconi University exchange and Strategy Consultant at Stone Island. Milan taught me that luxury is a system — brand, supply chain, culture, and price all speak the same language.</p>
+        <div class="j-tags"><span class="j-tag">Bocconi Exchange</span><span class="j-tag">Stone Island</span><span class="j-tag">Italian A1</span></div>
+      </div>
+
+      <div class="j-panel" data-city="3" id="jp3">
+        <div class="j-roman">IV</div>
+        <h3 class="j-chapter">Convergence</h3>
+        <p class="j-sub">Where It All Comes Together</p>
+        <div class="j-rule"></div>
+        <div class="j-location">Richmond, Virginia · 2023–Present</div>
+        <p class="j-text">At the University of Richmond, I'm building the analytical and strategic foundation for a consulting career. Presidential Scholar, research intern to the university president, and targeting MBB.</p>
+        <div class="j-tags"><span class="j-tag">University of Richmond</span><span class="j-tag">Presidential Scholar</span><span class="j-tag">MBB Target</span></div>
+      </div>
+
+    </div><!-- /journey-panels -->
+
+    <!-- RIGHT: sticky map -->
+    <div class="journey-map" id="journey-map">
+      <div id="map"></div>
+    </div>
+
+  </div><!-- /journey-split -->
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="container">
+    <div class="section-label fade-in">Consulting Experience</div>
+    <h2 class="section-title fade-in">Where I've<br><em>delivered.</em></h2>
+    <div class="exp-grid fade-in">
+      <div class="exp-card">
+        <div class="exp-num">01</div>
+        <div class="exp-company">GTG Abroad</div>
+        <div class="exp-role">Innovation Consultant</div>
+        <div class="exp-desc">Led consulting engagements for international clients, developing innovation strategies and frameworks that bridge cross-cultural contexts and drive measurable outcomes.</div>
+        <div class="exp-tags"><span class="exp-tag">Innovation</span><span class="exp-tag">International Clients</span><span class="exp-tag">Strategy</span></div>
+      </div>
+      <div class="exp-card">
+        <div class="exp-num">02</div>
+        <div class="exp-company">Stone Island · Milan</div>
+        <div class="exp-role">Strategy Consultant</div>
+        <div class="exp-desc">Contributed to luxury fashion strategy during Bocconi University exchange in Milan. Worked on brand positioning and operational analysis for one of Italy's most iconic technical fashion houses.</div>
+        <div class="exp-tags"><span class="exp-tag">Luxury Fashion</span><span class="exp-tag">Brand Strategy</span><span class="exp-tag">Milan</span></div>
+      </div>
+      <div class="exp-card">
+        <div class="exp-num">03</div>
+        <div class="exp-company">Health Brigade</div>
+        <div class="exp-role">Data Analyst & Consultant</div>
+        <div class="exp-desc">Built a HIPAA-compliant Excel analytics tool from the ground up for a nonprofit healthcare organization, enabling data-driven decision-making in a resource-constrained environment.</div>
+        <div class="exp-tags"><span class="exp-tag">HIPAA-Compliant</span><span class="exp-tag">Excel Analytics</span><span class="exp-tag">Nonprofit Healthcare</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEADERSHIP -->
+<section id="leadership">
+  <div class="container">
+    <div class="section-label fade-in">Leadership</div>
+    <h2 class="section-title fade-in">Trusted at the<br><em>highest levels.</em></h2>
+    <div class="leadership-list fade-in">
+      <div class="leadership-item">
+        <div class="l-idx">01</div>
+        <div><div class="l-title">President's Research Intern</div><div class="l-sub">Office of President Kevin Hallock · University of Richmond</div></div>
+      </div>
+      <div class="leadership-item">
+        <div class="l-idx">02</div>
+        <div><div class="l-title">Presidential Advisory Board</div><div class="l-sub">One of 15 students selected university-wide · University of Richmond</div></div>
+      </div>
+      <div class="leadership-item">
+        <div class="l-idx">03</div>
+        <div><div class="l-title">Senior Senator</div><div class="l-sub">Robins School of Business Government · University of Richmond</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HONORS -->
+<section id="honors">
+  <div class="container">
+    <div class="section-label fade-in">Recognition</div>
+    <h2 class="section-title fade-in">Honors &amp;<br><em>Distinctions.</em></h2>
+    <div class="honors-grid fade-in">
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">Presidential Scholar<span class="honor-sub">Top 10% · University of Richmond</span></div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">BAPA Scholar<span class="honor-sub">Top 5%</span></div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">Davis &amp; Global Scholar</div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">UWC BiH Scholar<span class="honor-sub">Top 22 nationally</span></div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">Phi Eta Sigma Honor Society</div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">Phi Beta Delta Honor Society</div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">Dean's List<span class="honor-sub">Four designations</span></div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">UN COP27 Delegate<span class="honor-sub">Egypt · 2022</span></div></div>
+      <div class="honor-item"><div class="honor-dot"></div><div class="honor-text">BAPA Forum Speaker<span class="honor-sub">Women in Higher Education · October 2024</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="container">
+    <div class="section-label fade-in">Capabilities</div>
+    <h2 class="section-title fade-in">Tools of the<br><em>trade.</em></h2>
+    <div class="skills-wrap fade-in">
+      <div>
+        <div class="skills-group-title">Technical &amp; Analytical</div>
+        <span class="skill-pill">Advanced Excel</span>
+        <span class="skill-pill">Solver &amp; Monte Carlo</span>
+        <span class="skill-pill">Power Pivot</span>
+        <span class="skill-pill">PivotTables</span>
+        <span class="skill-pill">R</span>
+        <span class="skill-pill">Microsoft Access</span>
+        <span class="skill-pill">Generative AI</span>
+        <span class="skill-pill">AI Agents</span>
+        <span class="skill-pill">Prompt Engineering</span>
+        <span class="skill-pill">Context Engineering</span>
+        <span class="skill-pill">Workflow Automation</span>
+      </div>
+      <div>
+        <div class="skills-group-title">Languages</div>
+        <span class="skill-pill">English · C2</span>
+        <span class="skill-pill">Bosnian / Croatian · C2</span>
+        <span class="skill-pill">German · B1</span>
+        <span class="skill-pill">Italian · A1</span>
+        <div style="margin-top:2.5rem;">
+          <div class="skills-group-title">Domain Focus</div>
+          <span class="skill-pill">Management Consulting</span>
+          <span class="skill-pill">Analytics &amp; Operations</span>
+          <span class="skill-pill">Higher Education</span>
+          <span class="skill-pill">Luxury Strategy</span>
+          <span class="skill-pill">Nonprofit Analytics</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERESTS -->
+<section id="interests">
+  <div class="container">
+    <div class="section-label fade-in">What Drives Me</div>
+    <h2 class="section-title fade-in">Beyond the<br><em>résumé.</em></h2>
+    <div class="interests-grid fade-in">
+      <div class="interest-card"><div class="i-title">Higher Education Consulting</div><div class="i-text">I'm drawn to the intersection of institutional strategy and human potential. I want to help universities navigate funding pressures, access gaps, and the AI transformation of learning.</div></div>
+      <div class="interest-card"><div class="i-title">AI in Education</div><div class="i-text">My research internship with President Hallock focused on building GenAI tools for economics education. I believe AI will reshape pedagogy, and I want to be at the frontier of that conversation.</div></div>
+      <div class="interest-card"><div class="i-title">Women's Advancement in Leadership</div><div class="i-text">Beginning Fall 2026, I'll pursue an Economics Honors Thesis on women's advancement in higher education leadership — a topic I've spoken on publicly and care deeply about.</div></div>
+      <div class="interest-card"><div class="i-title">Global Policy</div><div class="i-text">From COP27 to Bocconi, I've engaged with policy at every level. The most consequential consulting problems sit at the intersection of organizations, governments, and global systems.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- DANCE -->
+<section id="dance">
+  <div class="container">
+    <div class="section-label fade-in">Personal Dimension</div>
+    <h2 class="section-title fade-in">The art of<br><em>movement.</em></h2>
+    <div class="dance-content fade-in">
+      <div class="dance-text">
+        <p>I have a background in dance, and I taught dance in Bosnia before beginning my university journey. For me, dance was never only performance — it was how I understood precision, timing, and the relationship between structure and freedom.</p>
+        <p>Teaching brought a different kind of challenge: breaking complex movement into learnable parts, reading a room, motivating people across skill levels. These are not separate from consulting. They are the same skills.</p>
+        <p>Dance also kept me connected to Bosnian cultural roots while I traveled and changed. It's one of the few disciplines that demands your full presence — body, breath, and mind — all at once.</p>
+      </div>
+      <div class="dance-quote">
+        <p>"Dance taught me that discipline and creativity aren't opposites. The most rigorous structure is what sets you free."</p>
+        <cite>— Imman Kajtazović</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container-narrow" style="text-align:center;">
+    <div class="section-label fade-in" style="display:inline-block;">Let's Connect</div>
+    <h2 class="section-title fade-in">I'd love to<br><em>hear from you.</em></h2>
+    <p class="contact-intro fade-in">Whether you're a recruiter, researcher, or someone who wants to think through a hard problem — I'm always open to a conversation. Reach out and let's talk.</p>
+    <div class="contact-links fade-in">
+      <a href="https://linkedin.com/in/imman-kajtazovic" target="_blank" class="contact-link">LinkedIn</a>
+      <a href="mailto:imman.kajtazovic@richmond.edu" class="contact-link">Email Me</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-name">Imman Kajtazović</span>
+  <span class="footer-note">University of Richmond · Class of 2027 · Aspiring Management Consultant</span>
+</footer>
+
+<script>
+// ── HAMBURGER ──
+const hamburger = document.getElementById('hamburger');
+const navLinks  = document.getElementById('nav-links');
+hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+// ── FADE-IN OBSERVER ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ── LEAFLET MAP ──
+const cities = [
+  { name: 'Bihać',     coords: [44.8165, 15.8708], zoom: 10 },
+  { name: 'Mostar',    coords: [43.3438, 17.8078], zoom: 11 },
+  { name: 'Milan',     coords: [45.4642,  9.1900], zoom: 12 },
+  { name: 'Richmond',  coords: [37.5407,-77.4360], zoom: 11 }
+];
+
+const map = L.map('map', {
+  center: [45, 14],
+  zoom: 5,
+  zoomControl: true,
+  scrollWheelZoom: false,
+  dragging: true,
+  attributionControl: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+const pinIcon = L.divIcon({ className: 'map-pin', iconSize: [12, 12], iconAnchor: [6, 6] });
+const markers = [];
+
+function activateCity(idx) {
+  const city = cities[idx];
+  // flyTo with smooth animation
+  map.flyTo(city.coords, city.zoom, { animate: true, duration: 1.8, easeLinearity: 0.25 });
+  // Drop marker + label if not yet added
+  if (!markers[idx]) {
+    L.marker(city.coords, { icon: pinIcon }).addTo(map);
+    const labelIcon = L.divIcon({ className: 'map-label', html: city.name, iconAnchor: [-10, 4] });
+    L.marker(city.coords, { icon: labelIcon }).addTo(map);
+    markers[idx] = true;
+  }
+}
+
+// Start on city 0
+activateCity(0);
+
+// ── SCROLL-DRIVEN CITY TRANSITIONS ──
+// We track which panel's vertical center is closest to the middle of the viewport
+const panels = Array.from(document.querySelectorAll('.j-panel'));
+const splitEl = document.getElementById('journey-split');
+let activeIdx = 0;
+
+function updateActivePanel() {
+  // Only run if the journey section is at all visible
+  const splitRect = splitEl.getBoundingClientRect();
+  if (splitRect.bottom < 0 || splitRect.top > window.innerHeight) return;
+
+  const mid = window.innerHeight / 2;
+  let best = 0;
+  let bestDist = Infinity;
+
+  panels.forEach((p, i) => {
+    const r = p.getBoundingClientRect();
+    const centerY = (r.top + r.bottom) / 2;
+    const dist = Math.abs(centerY - mid);
+    if (dist < bestDist) { bestDist = dist; best = i; }
+  });
+
+  if (best !== activeIdx) {
+    // Remove active class from all
+    panels.forEach(p => p.classList.remove('active'));
+    panels[best].classList.add('active');
+    activeIdx = best;
+    activateCity(best);
+  }
+}
+
+// Throttled scroll listener
+let rafPending = false;
+window.addEventListener('scroll', () => {
+  if (!rafPending) {
+    rafPending = true;
+    requestAnimationFrame(() => {
+      updateActivePanel();
+      rafPending = false;
+    });
+  }
+}, { passive: true });
+
+// Also run on load
+updateActivePanel();
+</script>
+</body>
+</html>
